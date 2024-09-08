@@ -1,0 +1,19 @@
+- name: Install Xray
+  block:
+    - name: Create Xray destenation directory
+      ansible.builtin.file:
+        path: "{{ xray_path }}"
+        state: directory
+    - name: Download Xray binaries
+      vars:
+        xray_url: "https://github.com/XTLS/Xray-core/releases/download/{{ xray_version }}/Xray-{{ xray_platform }}.zip"
+      ansible.builtin.unarchive:
+        src: "{{ xray_url }}"
+        dest: "{{ xray_path }}"
+        remote_src: yes
+    - name: Make Xray binary executable
+      vars:
+        xray_bin: "{{ (xray_path, 'xray') | path_join }}"
+      ansible.builtin.file:
+        path: "{{ xray_bin }}"
+        mode: u+x

@@ -1,0 +1,8 @@
+- name: Set up VLESS and SS proxy server.
+  hosts: myvps
+  vars:
+    xray_version: "v1.8.24"
+    xray_platform: "linux-64"
+    xray_path: "/opt/ansible_xray"
+  roles:
+    - xray
