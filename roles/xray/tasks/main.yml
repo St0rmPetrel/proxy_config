@@ -17,3 +17,40 @@
       ansible.builtin.file:
         path: "{{ xray_bin }}"
         mode: u+x
+- name: Config Xray
+  vars:
+    ss_link_file: "{{ (xray_path, 'ss_link') | path_join }}"
+  block:
+    - name: Install curl
+      ansible.builtin.apt:
+        name: curl
+    - name: Set VPS variables
+      block:
+        - name: Get ifconfig
+          ansible.builtin.command: "curl ifconfig.me"
+          register: vps_ip_v4_result
+        - name: Set vps_ip_v4
+          ansible.builtin.set_fact:
+            vps_ip_v4: "{{ vps_ip_v4_result.stdout }}"
+    - name: Set ShadowSocks variables
+      block:
+        - name: Generate password
+          ansible.builtin.command: "openssl rand -base64 16"
+          register: generate_password_result
+        - name: Set xray_ss_password
+          ansible.builtin.set_fact:
+            xray_ss_password: "{{ generate_password_result.stdout }}"
+        - name: Write ss_link
+          ansible.builtin.template:
+            src: ss_link.j2
+            dest: "{{ ss_link_file }}"
+            mode: '0644'
+        - name: Read ss_link
+          ansible.builtin.command: "cat {{ ss_link_file }}"
+          register: ss_link_file_content
+
+    - name: Set VLESS variables
+      block:
+        - name: Print server name
+          ansible.builtin.debug:
+            msg: "Config {{ xray_vless_server_name }}"
