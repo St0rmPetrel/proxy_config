@@ -1,0 +1,12 @@
+[Unit]
+Description=XRay
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=30
+WorkingDirectory={{ xray_path }}
+ExecStart={{ xray_bin }} run -c {{ xray_config }}
+
+[Install]
+WantedBy=multi-user.target

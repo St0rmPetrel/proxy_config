@@ -1,0 +1,88 @@
+{
+   "inbounds" : [
+      {
+         "listen" : "{{ vps_ip_v4 }}",
+         "port" : 443,
+         "protocol" : "vless",
+         "settings" : {
+            "clients" : [
+               {
+                  "email" : "user1",
+                  "flow" : "xtls-rprx-vision",
+                  "id" : "{{ xray_uuid }}"
+               }
+            ],
+            "decryption" : "none"
+         },
+         "sniffing" : {
+            "destOverride" : [
+               "http",
+               "tls",
+               "quic"
+            ],
+            "enabled" : true
+         },
+         "streamSettings" : {
+            "network" : "tcp",
+            "realitySettings" : {
+               "dest" : "{{ xray_vless_camouflage_domain }}:443",
+               "maxClientVer" : "",
+               "maxTimeDiff" : 0,
+               "minClientVer" : "",
+               "privateKey" : "{{ xray_private_key }}",
+               "serverNames" : [
+                  "{{ xray_vless_camouflage_domain }}"
+               ],
+               "shortIds" : [
+                  ""
+               ],
+               "show" : false,
+               "xver" : 0
+            },
+            "security" : "reality"
+         },
+         "tag" : "reality-in"
+      },
+      {
+         "port" : {{ xray_ss_port }},
+         "protocol" : "shadowsocks",
+         "settings" : {
+            "method" : "2022-blake3-aes-128-gcm",
+            "network" : "tcp,udp",
+            "password" : "{{ xray_ss_password }}"
+         },
+         "sniffing" : {
+            "destOverride" : [
+               "http",
+               "tls",
+               "quic"
+            ],
+            "enabled" : true
+         },
+         "tag" : "ss-in"
+      }
+   ],
+   "log" : {
+      "loglevel" : "info"
+   },
+   "outbounds" : [
+      {
+         "protocol" : "freedom",
+         "tag" : "direct"
+      },
+      {
+         "protocol" : "blackhole",
+         "tag" : "block"
+      }
+   ],
+   "routing" : {
+      "domainStrategy" : "IPIfNonMatch",
+      "rules" : [
+         {
+            "outboundTag" : "block",
+            "protocol" : "bittorrent",
+            "type" : "field"
+         }
+      ]
+   }
+}

@@ -4,5 +4,9 @@
     xray_version: "v1.8.24"
     xray_platform: "linux-64"
     xray_path: "/opt/ansible_xray"
+    xray_vless_camouflage_domain: "www.microsoft.com"
+    xray_vless_server_name: "MyVlessServer"
+    xray_ss_server_name: "MyShadowSocksServer"
+    xray_ss_port: "54321"
   roles:
     - xray
