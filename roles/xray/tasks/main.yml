@@ -11,19 +11,21 @@
         src: "{{ xray_url }}"
         dest: "{{ xray_path }}"
         remote_src: yes
-    - name: Make Xray binary executable
-      vars:
+    - name: Set xray_bin
+      ansible.builtin.set_fact:
         xray_bin: "{{ (xray_path, 'xray') | path_join }}"
+    - name: Make Xray binary executable
       ansible.builtin.file:
         path: "{{ xray_bin }}"
         mode: u+x
+- name: Install curl
+  ansible.builtin.apt:
+    name: curl
 - name: Config Xray
   vars:
     ss_link_file: "{{ (xray_path, 'ss_link') | path_join }}"
+    vless_link_file: "{{ (xray_path, 'vless_link') | path_join }}"
   block:
-    - name: Install curl
-      ansible.builtin.apt:
-        name: curl
     - name: Set VPS variables
       block:
         - name: Get ifconfig
@@ -47,10 +49,57 @@
             mode: '0644'
         - name: Read ss_link
           ansible.builtin.command: "cat {{ ss_link_file }}"
-          register: ss_link_file_content
+          register: cat_ss_link_file_result
 
     - name: Set VLESS variables
       block:
-        - name: Print server name
-          ansible.builtin.debug:
-            msg: "Config {{ xray_vless_server_name }}"
+        - name: Generate xray_uuid
+          ansible.builtin.command: "{{ xray_bin }} uuid"
+          register: xray_uuid_result
+        - name: Generate xray_keys
+          ansible.builtin.command: "{{ xray_bin }} x25519"
+          register: xray_keys_result
+        - name: Set xray_uuid
+          ansible.builtin.set_fact:
+            xray_uuid: "{{ xray_uuid_result.stdout }}"
+        - name: Set xray_private_key and xray_public_key
+          ansible.builtin.set_fact:
+            xray_private_key: "{{ xray_keys_result.stdout.split('\n')[0].split(': ')[1] }}"
+            xray_public_key: "{{ xray_keys_result.stdout.split('\n')[1].split(': ')[1] }}"
+        - name: Write vless_link
+          ansible.builtin.template:
+            src: vless_link.j2
+            dest: "{{ vless_link_file }}"
+            mode: '0644'
+        - name: Read vless_link
+          ansible.builtin.command: "cat {{ vless_link_file }}"
+          register: cat_vless_link_file_result
+    - name: Create xray config.json
+      block:
+        - name: Set xray_config
+          ansible.builtin.set_fact:
+            xray_config: "{{ (xray_path, 'config.json') | path_join }}"
+        - name: Write xray config.json
+          ansible.builtin.template:
+            src: config.json.j2
+            dest: "{{ xray_config }}"
+            mode: '0644'
+- name: Start xray service
+  block:
+    - name: Create xray.service
+      ansible.builtin.template:
+        src: xray.service.j2
+        dest: "{{ (xray_path, 'xray.service') | path_join }}"
+        mode: '0644'
+    - name: Restart Xray service
+      ansible.builtin.systemd:
+        name: xray
+        state: restarted
+- name: Print client connection links
+  block:
+    - name: Print ss_link
+      ansible.builtin.debug:
+        msg: "{{ cat_ss_link_file_result.stdout }}"
+    - name: Print vless_link
+      ansible.builtin.debug:
+        msg: "{{ cat_vless_link_file_result.stdout }}"
