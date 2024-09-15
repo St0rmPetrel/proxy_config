@@ -4,6 +4,9 @@
       ansible.builtin.file:
         path: "{{ xray_path }}"
         state: directory
+    - name: Install unzip
+      ansible.builtin.apt:
+        name: unzip
     - name: Download Xray binaries
       vars:
         xray_url: "https://github.com/XTLS/Xray-core/releases/download/{{ xray_version }}/Xray-{{ xray_platform }}.zip"

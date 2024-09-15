@@ -43,6 +43,7 @@ myvps:
     vps_01:
       ansible_host: MY_VPS_IPv4
       ansible_password: MY_VPS_PASSWORD
+      ansible_user: root
 ```
 
 Save this file in the root of the repo folder (which you downloaded on the previous step).
