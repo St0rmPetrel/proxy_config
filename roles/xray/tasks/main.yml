@@ -85,11 +85,13 @@
             dest: "{{ xray_config }}"
             mode: '0644'
 - name: Start xray service
+  vars:
+    systemd_system_path: "/usr/lib/systemd/system"
   block:
     - name: Create xray.service
       ansible.builtin.template:
         src: xray.service.j2
-        dest: "{{ (xray_path, 'xray.service') | path_join }}"
+        dest: "{{ (systemd_system_path, 'xray.service') | path_join }}"
         mode: '0644'
     - name: Restart Xray service
       ansible.builtin.systemd:
