@@ -1,7 +1,7 @@
 - name: Set up VLESS and SS proxy server.
   hosts: myvps
   vars:
-    xray_version: "v1.8.24"
+    xray_version: "v26.2.6"
     xray_platform: "linux-64"
     xray_path: "/opt/ansible_xray"
     xray_vless_camouflage_domain: "www.microsoft.com"
